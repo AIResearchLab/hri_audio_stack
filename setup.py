@@ -15,12 +15,12 @@ setup(
     zip_safe=True,
     maintainer='buddhi',
     maintainer_email='buddhigamage217@gmail.com',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    description='Voice listener using ROS 2 and threading',
+    license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'voice_listener = my_robot_voice.voice_listener:main',
+            'voice_listener_action_server = my_robot_voice.voice_listener_action_server:main',
         ],
     },
 )
