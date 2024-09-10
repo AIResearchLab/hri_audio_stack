@@ -2,9 +2,12 @@
 import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionServer
+from action_msgs.msg import GoalStatus
+from std_msgs.msg import Header
 from my_robot_msgs.action import VoiceCommand  # Import your custom action
 import speech_recognition as sr
 import threading
+import time
 
 class VoiceListenerActionServer(Node):
 
@@ -14,8 +17,7 @@ class VoiceListenerActionServer(Node):
             self,
             VoiceCommand,
             'voice_command',
-            self.execute_callback,
-            # feedback_msg_type=VoiceCommand.Feedback  # Feedback is included but not used
+             execute_callback=self.execute_callback,
         )
         self.recognizer = sr.Recognizer()
 
@@ -24,42 +26,82 @@ class VoiceListenerActionServer(Node):
 
         self.get_logger().info('VoiceListener action server has been started.')
 
-    def execute_callback(self, goal_handle):
+    async def execute_callback(self, goal_handle):
         self.get_logger().info('Executing goal...')
         
         # Initialize the recognized_text attribute
         self.recognized_text = ''
-        
+
         # Start the listening thread
         listening_thread = threading.Thread(target=self.listen_for_speech, args=(goal_handle,))
         listening_thread.start()
 
-        # Wait for the thread to complete
-        listening_thread.join()
 
-        # Create and return the result
+        # Start the feedback thread
+        feedback_thread = threading.Thread(target=self.send_feedback, args=(goal_handle,))
+        feedback_thread.start()
+
+        listening_thread.join()
+        feedback_thread.join()
+
         result = VoiceCommand.Result()
+        result.header = Header()
         result.recognized_text = self.recognized_text
-        return result
+        result.header.stamp = self.get_clock().now().to_msg()  # Optionally set a timestamp
+        
+        # Mark the goal as successful
+        goal_handle.succeed()
+        return result 
 
     def listen_for_speech(self, goal_handle):
+        # Initialize the recognized_text attribute
+        
         with sr.Microphone() as source:
             # Adjust for ambient noise and calibrate the microphone
             self.recognizer.adjust_for_ambient_noise(source)
 
             self.get_logger().info("Listening for directions...")
-            audio = self.recognizer.listen(source)
 
             try:
+                # Listen for speech with a maximum timeout of 20 seconds
+                audio = self.recognizer.listen(source, timeout=20)
+
+                # Recognize the speech
                 self.recognized_text = self.recognizer.recognize_google(audio)
                 self.get_logger().info(f'You said: {self.recognized_text}')
-                goal_handle.succeed()
+
+                if not goal_handle.is_active:
+                    self.get_logger().info('Goal is no longer active.')
+                    return  # Return if the goal is not active
+                
+               
+
             except sr.UnknownValueError:
-                self.get_logger().error("Google Speech Recognition could not understand audio")
-                # No explicit abort needed, just return
+                self.get_logger().warning("Google Speech Recognition could not understand the audio")
+                goal_handle.abort()  # Abort on error
+
             except sr.RequestError as e:
-                self.get_logger().error(f"Could not request results; {e}")
-                # No explicit abort needed, just return
+                self.get_logger().error(f"Could not request results from Google Speech Recognition service; {e}")
+                goal_handle.abort()  # Abort on error
+
+            except sr.WaitTimeoutError:
+                self.get_logger().info("No speech detected within the timeout period.")
+                goal_handle.abort()  # Abort after timeout
+
+    def send_feedback(self, goal_handle):
+        # Send feedback periodically while the recognition is happening (every 1 second)
+        start_time = time.time()
+
+        while (time.time() - start_time) < 20:  # Keep sending feedback for up to 20 seconds
+            if goal_handle.status in [GoalStatus.STATUS_SUCCEEDED, GoalStatus.STATUS_ABORTED]:
+                break  # Stop sending feedback if the goal has succeeded or aborted
+
+            feedback_msg = VoiceCommand.Feedback()
+            feedback_msg.header = Header()  # You can populate the header with a timestamp if needed
+            goal_handle.publish_feedback(feedback_msg)
+
+            self.get_logger().info("Feedback sent while listening...")
+            time.sleep(1)  # Send feedback every 1 second
 
 def main(args=None):
     rclpy.init(args=args)

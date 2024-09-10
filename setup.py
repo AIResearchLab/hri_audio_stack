@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'voice_listener_action_server = my_robot_voice.voice_listener_action_server:main',
+            'voice_command_client = my_robot_voice.voice_command_client:main',
         ],
     },
 )

@@ -3,11 +3,18 @@
 <package format="3">
   <name>my_robot_voice</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>voice interactions with robots</description>
   <maintainer email="buddhigamage217@gmail.com">buddhi</maintainer>
   <license>Apache-2.0</license>
 
   <export>
     <build_type>ament_python</build_type>
+    <build_depend>rclcpp</build_depend>
+    <build_depend>rclcpp_action</build_depend>
+    <build_depend>my_robot_msgs</build_depend>
+
+    <exec_depend>rclcpp</exec_depend>
+    <exec_depend>rclcpp_action</exec_depend>
+    <exec_depend>my_robot_msgs</exec_depend>
   </export>
 </package>
