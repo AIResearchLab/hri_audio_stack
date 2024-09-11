@@ -4,7 +4,7 @@ from rclpy.node import Node
 from rclpy.action import ActionServer
 from action_msgs.msg import GoalStatus
 from std_msgs.msg import Header
-from my_robot_msgs.action import VoiceCommand  # Import your custom action
+from hri_audio_msgs.action import SpeechToText  # Import your custom action
 import speech_recognition as sr
 import threading
 import time
@@ -15,8 +15,8 @@ class VoiceListenerActionServer(Node):
         super().__init__('voice_listener_action_server')
         self._action_server = ActionServer(
             self,
-            VoiceCommand,
-            'voice_command',
+            SpeechToText,
+            'speech_to_text',
              execute_callback=self.execute_callback,
         )
         self.recognizer = sr.Recognizer()
@@ -44,7 +44,7 @@ class VoiceListenerActionServer(Node):
         listening_thread.join()
         feedback_thread.join()
 
-        result = VoiceCommand.Result()
+        result = SpeechToText.Result()
         result.header = Header()
         result.recognized_text = self.recognized_text
         result.header.stamp = self.get_clock().now().to_msg()  # Optionally set a timestamp
@@ -96,7 +96,7 @@ class VoiceListenerActionServer(Node):
             if goal_handle.status in [GoalStatus.STATUS_SUCCEEDED, GoalStatus.STATUS_ABORTED]:
                 break  # Stop sending feedback if the goal has succeeded or aborted
 
-            feedback_msg = VoiceCommand.Feedback()
+            feedback_msg = SpeechToText.Feedback()
             feedback_msg.header = Header()  # You can populate the header with a timestamp if needed
             goal_handle.publish_feedback(feedback_msg)
 

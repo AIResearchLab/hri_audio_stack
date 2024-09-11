@@ -2,14 +2,14 @@
 import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node
-from my_robot_msgs.action import VoiceCommand
+from hri_audio_msgs.action import SpeechToText
 from rclpy.duration import Duration
 
-class VoiceCommandClient(Node):
+class VoiceListenerClient(Node):
     def __init__(self):
-        super().__init__('voice_command_client')
-        self._action_client = ActionClient(self, VoiceCommand, 'voice_command')
-        self.get_logger().info('VoiceCommand client has been started.')
+        super().__init__('voice_listener_client')
+        self._action_client = ActionClient(self, SpeechToText, 'speech_to_text')
+        self.get_logger().info('Voice Listener Client has been started.')
 
     def send_goal(self):
         # Wait until the action server is available
@@ -19,7 +19,7 @@ class VoiceCommandClient(Node):
             return
 
         self.get_logger().info('Action server available. Sending goal...')
-        goal_msg = VoiceCommand.Goal()  # Create a new goal message
+        goal_msg = SpeechToText.Goal()  # Create a new goal message
         goal_msg.header.stamp = self.get_clock().now().to_msg()  # Set the timestamp
         
         # Send the goal to the action server
@@ -51,16 +51,16 @@ class VoiceCommandClient(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    voice_command_client = VoiceCommandClient()
-    voice_command_client.send_goal()
+    voice_listener_client = VoiceListenerClient()
+    voice_listener_client.send_goal()
     
     try:
-        rclpy.spin(voice_command_client)
+        rclpy.spin(voice_listener_client)
     except KeyboardInterrupt:
         pass
     finally:
         # Shutdown ROS 2 client
-        voice_command_client.destroy_node()
+        voice_listener_client.destroy_node()
         rclpy.shutdown()
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'my_robot_voice'
+package_name = 'hri_audio_stack'
 
 setup(
     name=package_name,
@@ -20,8 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'voice_listener_action_server = my_robot_voice.voice_listener_action_server:main',
-            'voice_command_client = my_robot_voice.voice_command_client:main',
+            'voice_listener_action_server = hri_audio_stack.voice_listener_action_server:main',
+            'voice_listener_client = hri_audio_stack.voice_listener_client:main',
         ],
     },
 )
