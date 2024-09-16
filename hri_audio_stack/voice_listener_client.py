@@ -47,21 +47,24 @@ class VoiceListenerClient(Node):
         # Handle the result once it is available
         result = future.result().result
         self.get_logger().info('Received result:')
-        self.get_logger().info(f'Recognized Text: {result.recognized_text}')
+        self.get_logger().info(f'Recognized Text: {result.stt_text}')
+        rclpy.shutdown()
 
 def main(args=None):
     rclpy.init(args=args)
     voice_listener_client = VoiceListenerClient()
     voice_listener_client.send_goal()
+
+    rclpy.spin(voice_listener_client)
     
-    try:
-        rclpy.spin(voice_listener_client)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        # Shutdown ROS 2 client
-        voice_listener_client.destroy_node()
-        rclpy.shutdown()
+    # try:
+    #     rclpy.spin(voice_listener_client)
+    # except KeyboardInterrupt:
+    #     pass
+    # finally:
+    #     # Shutdown ROS 2 client
+    #     voice_listener_client.destroy_node()
+    #     rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
