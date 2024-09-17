@@ -22,6 +22,8 @@ setup(
         'console_scripts': [
             'voice_listener_action_server = hri_audio_stack.voice_listener_action_server:main',
             'voice_listener_client = hri_audio_stack.voice_listener_client:main',
+            'voice_speaker_action_server = hri_audio_stack.voice_speaker_action_server:main',
+            'voice_speaker_client = hri_audio_stack.voice_speaker_client:main',
         ],
     },
 )

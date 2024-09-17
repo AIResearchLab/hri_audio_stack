@@ -57,14 +57,5 @@ def main(args=None):
 
     rclpy.spin(voice_listener_client)
     
-    # try:
-    #     rclpy.spin(voice_listener_client)
-    # except KeyboardInterrupt:
-    #     pass
-    # finally:
-    #     # Shutdown ROS 2 client
-    #     voice_listener_client.destroy_node()
-    #     rclpy.shutdown()
-
 if __name__ == '__main__':
     main()
